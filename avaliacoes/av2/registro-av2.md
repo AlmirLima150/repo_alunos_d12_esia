@@ -1,6 +1,6 @@
 # Registro individual — AV2
 
-**Limite: duas páginas de análise + anexo técnico curto.** Estudante: Almir — Data: 22/10/2026 — Caminho: B (MiniLoja)
+**Limite: duas páginas de análise + anexo técnico curto.** Estudante: Almir de Lima Felix dos Santos — Data: 22/10/2026 — Caminho: B (MiniLoja)
 
 ## 1. Escopo e plano
 
