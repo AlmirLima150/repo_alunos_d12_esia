@@ -32,10 +32,15 @@ class TestCalculo(unittest.TestCase):
     def test_cupom_natal_com_flag(self):
         os.environ["MINILOJA_PROMO_NATAL"] = "1"
         try:
-            resultado = calcular_total([{"preco": 100.0, "qtd": 1}], "NATAL", "PE")
-            self.assertIsNotNone(resultado)
+            # R1.2 + R1.3 + R1.4: (100 * 0.80 + 21.50) * 1.06 = 101.50 * 1.06 = 107.59
+            resultado = calcular_total([{"preco": 100.0, "qtd": 1}], "NATAL", "RJ")
+            self.assertEqual(resultado, 107.59)
         finally:
             os.environ.pop("MINILOJA_PROMO_NATAL", None)
+
+    def test_frete_rj_sem_cupom(self):
+        # R1.3 + R1.4 em RJ: (100.0 + 21.50) * 1.06 = 128.79
+        self.assertEqual(calcular_total([{"preco": 100.0, "qtd": 1}], None, "RJ"), 128.79)
 
     def test_cenarios_gravados(self):
         cenarios = {
