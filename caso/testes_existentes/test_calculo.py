@@ -48,3 +48,42 @@ class TestCalculo(unittest.TestCase):
             cenarios,
             {"simples": 76.51, "vip": 272.85, "limite_200": 223.55, "vazio": 13.54},
         )
+
+    def test_golden_master_produto_cartesiano(self):
+        """Golden Master: 5 carrinhos x 7 estados de cupom x 4 UFs = 140 cenários com igualdade exata."""
+        carrinhos = {
+            "C1": [{"sku": "CAMISA-M", "preco": 80.0, "qtd": 1}, {"sku": "BOLA-01", "preco": 50.0, "qtd": 1}],
+            "C2": [{"sku": "CHUTEIRA-42", "preco": 250.0, "qtd": 1}],
+            "C3": [{"sku": "BOLA-01", "preco": 19.99, "qtd": 3}],
+            "C4": [{"sku": "ITEM-200", "preco": 100.0, "qtd": 2}],
+            "C5": [],
+        }
+        cupons = [
+            ("NONE", None, "0"),
+            ("PROMO10", "PROMO10", "0"),
+            ("VIP15", "VIP15", "0"),
+            ("FRETEGRATIS", "FRETEGRATIS", "0"),
+            ("NATAL_0", "NATAL", "0"),
+            ("NATAL_1", "NATAL", "1"),
+            ("INV", "CUPOM_X", "0"),
+        ]
+        ufs = ["PE", "SP", "RJ", "BA"]
+        esperados = {
+            "C1": [150.05, 160.39, 160.59, 172.69, 136.4, 146.48, 146.81, 158.65, 129.57, 139.53, 139.92, 151.63, 136.5, 139.1, 137.8, 140.4, 150.05, 160.39, 160.59, 172.69, 122.75, 132.57, 133.03, 144.61, 150.05, 160.39, 160.59, 172.69],
+            "C2": [262.5, 267.5, 265.0, 270.0, 236.25, 240.75, 238.5, 243.0, 223.12, 227.38, 225.25, 229.5, 262.5, 267.5, 265.0, 270.0, 262.5, 267.5, 265.0, 270.0, 223.55, 235.29, 234.79, 248.29, 262.5, 267.5, 265.0, 270.0],
+            "C3": [76.51, 85.46, 86.36, 97.06, 70.22, 79.04, 80.0, 90.58, 67.07, 75.84, 76.82, 87.34, 62.97, 64.17, 63.57, 64.77, 76.51, 85.46, 86.36, 97.06, 63.92, 72.63, 73.64, 84.11, 76.51, 85.46, 86.36, 97.06],
+            "C4": [223.55, 235.29, 234.79, 248.29, 202.55, 213.89, 213.59, 226.69, 192.05, 203.19, 202.99, 215.89, 210.0, 214.0, 212.0, 216.0, 223.55, 235.29, 234.79, 248.29, 181.55, 192.49, 192.39, 205.09, 223.55, 235.29, 234.79, 248.29],
+            "C5": [13.54, 21.29, 22.79, 32.29, 13.54, 21.29, 22.79, 32.29, 13.54, 21.29, 22.79, 32.29, 0.0, 0.0, 0.0, 0.0, 13.54, 21.29, 22.79, 32.29, 13.54, 21.29, 22.79, 32.29, 13.54, 21.29, 22.79, 32.29],
+        }
+        try:
+            for c_id, itens in carrinhos.items():
+                obtidos = []
+                for _, cupom, flag in cupons:
+                    os.environ["MINILOJA_PROMO_NATAL"] = flag
+                    for uf in ufs:
+                        val = calcular_total(itens, cupom, uf)
+                        self.assertIsInstance(val, float)
+                        obtidos.append(val)
+                self.assertEqual(obtidos, esperados[c_id], f"Divergência no carrinho {c_id}")
+        finally:
+            os.environ.pop("MINILOJA_PROMO_NATAL", None)
