@@ -37,3 +37,11 @@ class TestPedidos(unittest.TestCase):
         r = svc.criar(1, [{"sku": "BOLA-01", "preco": 10.0, "qtd": 1}], token="recusado")
         self.assertEqual(r["status"], "pagamento_recusado")
         self.assertEqual(repo.todos(), [])
+
+    def test_criar_pedido_real_persiste_total_e_formatacao(self):
+        # Verifica integração sem mocks tautológicos: total calculado (R1) e formatado
+        repo = RepositorioPedidos()
+        svc = PedidoService(repo, Estoque({"BOLA-01": 5}), GatewayFake())
+        pedido = svc.criar(1, [{"sku": "BOLA-01", "preco": 50.0, "qtd": 2}], uf="PE")
+        self.assertEqual(pedido["total"], 118.55)
+        self.assertEqual(pedido["total_fmt"], "R$ 118,55")

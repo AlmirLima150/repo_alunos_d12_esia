@@ -8,6 +8,8 @@ class TestDescontos(unittest.TestCase):
         self.assertEqual(aplicar_desconto(200.0, None), 200.0)
 
     def test_aplicar_desconto(self):
-        total = 200.0
-        esperado = total - (total * 10 / 100)
-        self.assertEqual(aplicar_desconto(total, "PROMO10"), esperado)
+        self.assertEqual(aplicar_desconto(200.0, "PROMO10"), 180.0)
+
+    def test_aplicar_desconto_vip15(self):
+        # R1.2: VIP15 aplica 15% sobre 200.0 -> 170.0
+        self.assertEqual(aplicar_desconto(200.0, "VIP15"), 170.0)
