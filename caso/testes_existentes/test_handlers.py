@@ -24,3 +24,19 @@ class TestHandlers(unittest.TestCase):
         )
         self.assertEqual(status, 409)
         self.assertEqual(corpo["sku"], "CHUTEIRA-42")
+
+    def test_post_pedidos_409_desfaz_reserva_dos_itens_anteriores(self):
+        saldo_antes = handlers._estoque.saldo("BOLA-01")
+        status, corpo = handlers.post_pedidos(
+            12,
+            {
+                "itens": [
+                    {"sku": "BOLA-01", "preco": 50.0, "qtd": 4},
+                    {"sku": "CHUTEIRA-42", "preco": 300.0, "qtd": 999},
+                ]
+            },
+        )
+        self.assertEqual(status, 409)
+        self.assertEqual(corpo["sku"], "CHUTEIRA-42")
+        self.assertEqual(handlers._estoque.saldo("BOLA-01"), saldo_antes)
+        self.assertNotIn(("tmp-12", "BOLA-01"), handlers._estoque.reservas)
