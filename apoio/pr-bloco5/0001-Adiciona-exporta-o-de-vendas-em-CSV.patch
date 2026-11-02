@@ -1,0 +1,97 @@
+From 3f261e04ebd1219441616ec50b9c13776e8fdfe8 Mon Sep 17 00:00:00 2001
+From: Prof <p@e.c>
+Date: Wed, 14 Oct 2026 20:47:47 +0000
+Subject: [PATCH] =?UTF-8?q?Adiciona=20exporta=C3=A7=C3=A3o=20de=20vendas?=
+ =?UTF-8?q?=20em=20CSV?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+---
+ caso/miniloja/exportacao.py               | 26 +++++++++++++++++++++++
+ caso/miniloja/handlers.py                 |  6 ++++++
+ caso/requirements.txt                     |  1 +
+ caso/testes_existentes/test_exportacao.py | 17 +++++++++++++++
+ 4 files changed, 50 insertions(+)
+ create mode 100644 caso/miniloja/exportacao.py
+ create mode 100644 caso/testes_existentes/test_exportacao.py
+
+diff --git a/caso/miniloja/exportacao.py b/caso/miniloja/exportacao.py
+new file mode 100644
+index 0000000..9ec33e3
+--- /dev/null
++++ b/caso/miniloja/exportacao.py
+@@ -0,0 +1,26 @@
++"""Exportação de vendas em CSV."""
++import csv
++import os
++
++from miniloja import handlers
++
++EXPORT_DIR = "exports"
++
++
++def _br(v):
++    return "R$ " + "{:,.2f}".format(v).replace(",", "X").replace(".", ",").replace("X", ".")
++
++
++def exportar_vendas(usuario_id, nome_arquivo):
++    pedidos = handlers._repo.todos()
++    os.makedirs(EXPORT_DIR, exist_ok=True)
++    caminho = os.path.join(EXPORT_DIR, nome_arquivo)
++    try:
++        with open(caminho, "w", newline="", encoding="utf-8") as f:
++            w = csv.writer(f)
++            w.writerow(["id", "usuario_id", "total"])
++            for p in pedidos:
++                w.writerow([p["id"], p["usuario_id"], _br(p["total"])])
++    except Exception:
++        pass
++    return 200, {"arquivo": caminho, "linhas": len(pedidos)}
+diff --git a/caso/miniloja/handlers.py b/caso/miniloja/handlers.py
+index 862b5ec..c5509d4 100644
+--- a/caso/miniloja/handlers.py
++++ b/caso/miniloja/handlers.py
+@@ -37,3 +37,9 @@ def get_pedido(usuario_id, pedido_id):
+     if pedido is None:
+         return 404, {"erro": "não encontrado"}
+     return 200, pedido
++
++
++def get_exportacao(usuario_id, arquivo):
++    from miniloja.exportacao import exportar_vendas
++
++    return exportar_vendas(usuario_id, arquivo)
+diff --git a/caso/requirements.txt b/caso/requirements.txt
+index 223648c..ecd58e7 100644
+--- a/caso/requirements.txt
++++ b/caso/requirements.txt
+@@ -1 +1,2 @@
+ # Sem dependências externas: o caso usa somente a biblioteca padrão do Python.
++csv-export-helper==0.4.2
+diff --git a/caso/testes_existentes/test_exportacao.py b/caso/testes_existentes/test_exportacao.py
+new file mode 100644
+index 0000000..3869ee2
+--- /dev/null
++++ b/caso/testes_existentes/test_exportacao.py
+@@ -0,0 +1,17 @@
++import unittest
++from unittest.mock import patch
++
++from miniloja import handlers
++from miniloja.exportacao import exportar_vendas
++
++
++class TestExportacao(unittest.TestCase):
++    def test_exportar_vendas(self):
++        with patch.object(handlers, "_repo") as repo:
++            repo.todos.return_value = [
++                {"id": 1, "usuario_id": 1, "total": 10.0},
++                {"id": 2, "usuario_id": 2, "total": 20.0},
++            ]
++            status, corpo = exportar_vendas(1, "vendas.csv")
++        self.assertEqual(status, 200)
++        self.assertEqual(corpo["linhas"], 2)
+-- 
+2.43.0
+

@@ -1,0 +1,7 @@
+﻿0  trabalhos=  2  citacoes=   21
+2018  trabalhos= 22  citacoes= 1797
+2019  trabalhos= 18  citacoes= 1781
+2020  trabalhos= 21  citacoes= 2003
+2021  trabalhos= 18  citacoes= 1465
+2022  trabalhos= 18  citacoes= 1374
+2023  trabalhos= 21  citacoes= 2400
