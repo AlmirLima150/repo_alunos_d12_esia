@@ -19,8 +19,16 @@ class PedidoService:
         if not itens:
             raise ValueError("pedido sem itens")
         total = calcular_total(itens, cupom, uf)
-        for i in itens:
-            self.estoque.reservar(i["sku"], i["qtd"], pedido_id=f"tmp-{usuario_id}")
+        pedido_id = f"tmp-{usuario_id}"
+        reservados = []
+        try:
+            for i in itens:
+                self.estoque.reservar(i["sku"], i["qtd"], pedido_id=pedido_id)
+                reservados.append((i["sku"], i["qtd"]))
+        except EstoqueInsuficiente:
+            for sku, qtd in reversed(reservados):
+                self.estoque.liberar(sku, qtd, pedido_id=pedido_id)
+            raise
         cobranca = self.gateway.cobrar(total, token)
         if cobranca["status"] != "aprovado":
             return {"status": "pagamento_recusado", "total": total}
